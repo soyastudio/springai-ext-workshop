@@ -1,1 +1,1 @@
-# power-ai-workshop
+# spring-ai-workshop
