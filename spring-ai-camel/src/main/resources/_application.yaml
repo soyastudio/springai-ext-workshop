@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: SpringCamelAI
+
+  ai:
+    openai:
+      api-key: sk-mnopabcd1234efghmnopabcd1234efghmnopabcd
+
+  artemis:
+    mode: native
+    host: localhost
+    port: 61616
+    user: admin
+    password: admin

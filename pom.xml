@@ -21,6 +21,8 @@
     </dependencyManagement>
 
     <modules>
+        <module>spring-ai-core</module>
+        <module>spring-ai-camel</module>
     </modules>
 
 </project>

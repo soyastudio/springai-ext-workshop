@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: SpringCamelAI
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: wiki
+
+  ai:
+    google:
+      genai:
+        api-key: AIzaSyBrNRjvXL-WLP_4N4l24SkBHNq-cF_khx8
+        chat:
+          options:
+            model: gemini-3-flash-preview
+
+        embedding:
+          api-key: AIzaSyBrNRjvXL-WLP_4N4l24SkBHNq-cF_khx8
+          text:
+            options:
+              model: gemini-embedding-001
+
+    vectorstore:
+      mongodb:
+        collection-name: vector_store
+        initialize-schema: true
+        path-name: embedding
+        indexName: vector_index
+
+  artemis:
+    mode: native
+    host: localhost
+    port: 61616
+    user: admin
+    password: admin
