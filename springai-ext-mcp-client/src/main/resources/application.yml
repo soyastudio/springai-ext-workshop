@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: mcp
+  main:
+    web-application-type: none
+  
+  ai:
+    google:
+      genai:
+        api-key: AIzaSyC0Y84w516eDwKCrXGczHpIMPbiRcFHQQk
+        chat:
+          options:
+            model: gemini-3-flash-preview
+
+    # Connect to the MCP Weather Server using streamable-http client transport
+    mcp:
+      client:
+        streamable-http:
+          connections:
+            my-weather-server:
+              url: http://localhost:8080        
+        stdio:
+          connections:
+            brave-search:
+              command: npx
+              args:
+                - "-y"
+                - "@modelcontextprotocol/server-brave-search"        
+
+# Debug configuration (commented out)
+# debug: true

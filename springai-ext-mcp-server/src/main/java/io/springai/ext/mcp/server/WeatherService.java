@@ -1,0 +1,94 @@
+package io.springai.ext.mcp.server;
+
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import io.modelcontextprotocol.server.McpSyncServerExchange;
+import io.modelcontextprotocol.spec.McpSchema.CreateMessageRequest;
+import io.modelcontextprotocol.spec.McpSchema.CreateMessageResult;
+import io.modelcontextprotocol.spec.McpSchema.LoggingLevel;
+import io.modelcontextprotocol.spec.McpSchema.LoggingMessageNotification;
+import io.modelcontextprotocol.spec.McpSchema.ModelPreferences;
+import io.modelcontextprotocol.spec.McpSchema.ProgressNotification;
+import io.modelcontextprotocol.spec.McpSchema.Role;
+import io.modelcontextprotocol.spec.McpSchema.SamplingMessage;
+import io.modelcontextprotocol.spec.McpSchema.TextContent;
+import org.springaicommunity.mcp.annotation.McpProgressToken;
+import org.springaicommunity.mcp.annotation.McpTool;
+import org.springaicommunity.mcp.annotation.McpToolParam;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
+/**
+ * @author Christian Tzolov
+ */
+@Service
+public class WeatherService {
+
+    private final RestClient restClient = RestClient.create();
+
+    /**
+     * The response format from the Open-Meteo API
+     */
+    public record WeatherResponse(Current current) {
+        public record Current(LocalDateTime time, int interval, double temperature_2m) {
+        }
+    }
+
+    @McpTool(description = "Get the temperature (in celsius) for a specific location")
+    public String getTemperature(McpSyncServerExchange exchange,
+                                 @McpToolParam(description = "The location latitude") double latitude,
+                                 @McpToolParam(description = "The location longitude") double longitude,
+                                 @McpProgressToken String progressToken) {
+
+        exchange.loggingNotification(LoggingMessageNotification.builder()
+                .level(LoggingLevel.DEBUG)
+                .data("Call getTemperature Tool with latitude: " + latitude + " and longitude: " + longitude)
+                .meta(Map.of()) // non null meata as a workaround for bug: ...
+                .build());
+
+        // 0% progress
+        exchange.progressNotification(new ProgressNotification(progressToken, 0.0, 1.0, "Retrieving weather forecast"));
+
+        WeatherResponse weatherResponse = restClient.get()
+                .uri("https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m",
+                        latitude, longitude)
+                .retrieve()
+                .body(WeatherResponse.class);
+
+        String epicPoem = "MCP client doesn't provide sampling capability.";
+
+        if (exchange.getClientCapabilities().sampling() != null) {
+
+            // 50% progress
+            exchange.progressNotification(new ProgressNotification(progressToken, 0.5, 1.0, "Start sampling"));
+
+            String samplingMessage = """
+                    For a weather forecast (temperature is in Celsius): %s.
+                    At location with latitude: %s and longitude: %s.
+                    Please write an epic poem about this forecast using a Shakespearean style.
+                    """.formatted(weatherResponse.current().temperature_2m(), latitude, longitude);
+
+            CreateMessageResult samplingResponse = exchange.createMessage(CreateMessageRequest.builder()
+                    .systemPrompt("You are a poet!")
+                    .messages(List.of(new SamplingMessage(Role.USER, new TextContent(samplingMessage))))
+                    .modelPreferences(ModelPreferences.builder().addHint("anthropic").build())
+                    .build());
+
+            epicPoem = ((TextContent) samplingResponse.content()).text();
+
+        }
+
+        // 100% progress
+        exchange.progressNotification(new ProgressNotification(progressToken, 1.0, 1.0, "Task completed"));
+
+        return """
+                Weather Poem2: %s
+                about the weather: %s°C at location with latitude: %s and longitude: %s
+                """.formatted(epicPoem, weatherResponse.current().temperature_2m(), latitude, longitude);
+    }
+
+}

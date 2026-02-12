@@ -1,3 +1,6 @@
+server:
+  port: 9775
+
 spring:
   application:
     name: SpringCamelAI
@@ -10,7 +13,7 @@ spring:
   ai:
     google:
       genai:
-        api-key: AIzaSyBrNRjvXL-WLP_4N4l24SkBHNq-cF_khx8
+        api-key: AIzaSyC0Y84w516eDwKCrXGczHpIMPbiRcFHQQk
         chat:
           options:
             model: gemini-3-flash-preview

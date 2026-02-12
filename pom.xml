@@ -25,7 +25,9 @@
         <module>springai-ext-core</module>
         <module>springai-ext-starter</module>
         <module>springai-ext-platform</module>
-        <module>springai-ext-tool</module>
+        <module>springai-ext-maven-plugin</module>
+        <module>springai-ext-mcp-server</module>
+        <module>springai-ext-mcp-client</module>
     </modules>
 
 </project>
